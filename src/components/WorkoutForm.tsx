@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Save, X } from 'lucide-react';
 
 interface WorkoutFormProps {
@@ -13,6 +12,9 @@ interface WorkoutFormProps {
     rpe: number;
     sets: number;
     reps: number;
+    duration?: number;
+    cardioTime?: number;
+    caloriesBurned?: number;
   }) => void;
   onCancel: () => void;
 }
@@ -23,7 +25,10 @@ const WorkoutForm = ({ onSubmit, onCancel }: WorkoutFormProps) => {
     weight: '',
     rpe: '',
     sets: '',
-    reps: ''
+    reps: '',
+    duration: '45',
+    cardioTime: '10',
+    caloriesBurned: '300'
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +43,10 @@ const WorkoutForm = ({ onSubmit, onCancel }: WorkoutFormProps) => {
       weight: Number(formData.weight),
       rpe: Number(formData.rpe),
       sets: Number(formData.sets),
-      reps: Number(formData.reps)
+      reps: Number(formData.reps),
+      duration: Number(formData.duration) || 45,
+      cardioTime: Number(formData.cardioTime) || 0,
+      caloriesBurned: Number(formData.caloriesBurned) || 300
     });
 
     setFormData({
@@ -46,7 +54,10 @@ const WorkoutForm = ({ onSubmit, onCancel }: WorkoutFormProps) => {
       weight: '',
       rpe: '',
       sets: '',
-      reps: ''
+      reps: '',
+      duration: '45',
+      cardioTime: '10',
+      caloriesBurned: '300'
     });
   };
 
@@ -120,6 +131,42 @@ const WorkoutForm = ({ onSubmit, onCancel }: WorkoutFormProps) => {
             placeholder="10"
             className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
             required
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-2">
+          <Label htmlFor="duration" className="text-slate-200 text-sm">Duração (min)</Label>
+          <Input
+            id="duration"
+            type="number"
+            value={formData.duration}
+            onChange={(e) => handleChange('duration', e.target.value)}
+            placeholder="45"
+            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cardioTime" className="text-slate-200 text-sm">Cardio (min)</Label>
+          <Input
+            id="cardioTime"
+            type="number"
+            value={formData.cardioTime}
+            onChange={(e) => handleChange('cardioTime', e.target.value)}
+            placeholder="10"
+            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="caloriesBurned" className="text-slate-200 text-sm">Calorias</Label>
+          <Input
+            id="caloriesBurned"
+            type="number"
+            value={formData.caloriesBurned}
+            onChange={(e) => handleChange('caloriesBurned', e.target.value)}
+            placeholder="300"
+            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
           />
         </div>
       </div>

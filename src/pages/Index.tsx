@@ -6,6 +6,9 @@ import { Plus, Dumbbell, Target, TrendingUp } from 'lucide-react';
 import WorkoutForm from '@/components/WorkoutForm';
 import ExerciseList from '@/components/ExerciseList';
 import WorkoutStats from '@/components/WorkoutStats';
+import TodayWorkoutCard from '@/components/TodayWorkoutCard';
+import MetricsGrid from '@/components/MetricsGrid';
+import WorkoutHistory from '@/components/WorkoutHistory';
 
 export interface Exercise {
   id: string;
@@ -15,6 +18,10 @@ export interface Exercise {
   sets: number;
   reps: number;
   date: string;
+  workoutName?: string;
+  duration?: number; // in minutes
+  cardioTime?: number; // in minutes
+  caloriesBurned?: number;
 }
 
 const Index = () => {
@@ -26,16 +33,22 @@ const Index = () => {
       rpe: 8,
       sets: 2,
       reps: 10,
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      workoutName: 'Pernas',
+      duration: 45,
+      cardioTime: 10,
+      caloriesBurned: 380
     }
   ]);
   const [showForm, setShowForm] = useState(false);
+  const [todayWorkoutName, setTodayWorkoutName] = useState('Ombros');
 
   const addExercise = (exercise: Omit<Exercise, 'id' | 'date'>) => {
     const newExercise: Exercise = {
       ...exercise,
       id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      workoutName: todayWorkoutName
     };
     setExercises(prev => [newExercise, ...prev]);
     setShowForm(false);
@@ -47,7 +60,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2 py-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -59,8 +72,14 @@ const Index = () => {
           <p className="text-slate-400 text-lg">Registre seus treinos e acompanhe seu progresso</p>
         </div>
 
-        {/* Stats Cards */}
-        <WorkoutStats exercises={exercises} />
+        {/* Today's Workout Card */}
+        <TodayWorkoutCard 
+          workoutName={todayWorkoutName} 
+          onWorkoutNameChange={setTodayWorkoutName}
+        />
+
+        {/* Metrics Grid */}
+        <MetricsGrid exercises={exercises} />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -103,6 +122,9 @@ const Index = () => {
             />
           </div>
         </div>
+
+        {/* Workout History */}
+        <WorkoutHistory exercises={exercises} />
       </div>
     </div>
   );
