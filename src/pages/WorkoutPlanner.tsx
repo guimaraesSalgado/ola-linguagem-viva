@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,19 @@ const WorkoutPlanner = () => {
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('');
   const [estimatedDuration, setEstimatedDuration] = useState<number>(60);
   const [editingWorkout, setEditingWorkout] = useState<WorkoutDay | null>(null);
+
+  // Load workout plan from localStorage on component mount
+  useEffect(() => {
+    const savedWorkoutPlan = localStorage.getItem('workoutPlan');
+    if (savedWorkoutPlan) {
+      setWorkoutPlan(JSON.parse(savedWorkoutPlan));
+    }
+  }, []);
+
+  // Save workout plan to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+  }, [workoutPlan]);
 
   const addWorkoutDay = () => {
     if (!selectedDay || !selectedMuscleGroup) return;
