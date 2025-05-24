@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import WorkoutStats from '@/components/WorkoutStats';
 import TodayWorkoutCard from '@/components/TodayWorkoutCard';
 import MetricsGrid from '@/components/MetricsGrid';
 import WorkoutHistory from '@/components/WorkoutHistory';
+import WorkoutSession from '@/components/WorkoutSession';
 
 export interface Exercise {
   id: string;
@@ -48,6 +48,7 @@ const Index = () => {
   const [showForm, setShowForm] = useState(false);
   const [todayWorkoutName, setTodayWorkoutName] = useState('');
   const [todayWorkoutPlan, setTodayWorkoutPlan] = useState<WorkoutDay | null>(null);
+  const [activeWorkout, setActiveWorkout] = useState<WorkoutDay | null>(null);
 
   // Get current day of week
   const getCurrentDayOfWeek = () => {
@@ -103,12 +104,39 @@ const Index = () => {
     setShowForm(false);
   };
 
+  const addCompletedExercises = (completedExercises: Exercise[]) => {
+    setExercises(prev => [...completedExercises, ...prev]);
+    setActiveWorkout(null);
+  };
+
   const deleteExercise = (id: string) => {
     setExercises(prev => prev.filter(ex => ex.id !== id));
   };
 
+  const startWorkout = () => {
+    if (todayWorkoutPlan) {
+      setActiveWorkout(todayWorkoutPlan);
+    }
+  };
+
   // Filter exercises for today only
   const todayExercises = exercises.filter(ex => ex.date === new Date().toISOString().split('T')[0]);
+
+  // If there's an active workout, show the workout session
+  if (activeWorkout) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4">
+        <div className="max-w-4xl mx-auto">
+          <WorkoutSession
+            workoutName={activeWorkout.muscleGroup}
+            plannedExercises={activeWorkout.exercises}
+            onComplete={addCompletedExercises}
+            onCancel={() => setActiveWorkout(null)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4">
@@ -129,6 +157,7 @@ const Index = () => {
           workoutName={todayWorkoutName} 
           onWorkoutNameChange={setTodayWorkoutName}
           todayWorkoutPlan={todayWorkoutPlan}
+          onStartWorkout={startWorkout}
         />
 
         {/* Metrics Grid */}
