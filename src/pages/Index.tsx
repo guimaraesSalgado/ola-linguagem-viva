@@ -44,21 +44,7 @@ const daysOfWeek = [
 ];
 
 const Index = () => {
-  const [exercises, setExercises] = useState<Exercise[]>([
-    {
-      id: '1',
-      name: 'Agachamento',
-      weight: 50,
-      rpe: 8,
-      sets: 2,
-      reps: 10,
-      date: new Date().toISOString().split('T')[0],
-      workoutName: 'Pernas',
-      duration: 45,
-      cardioTime: 10,
-      caloriesBurned: 380
-    }
-  ]);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [todayWorkoutName, setTodayWorkoutName] = useState('');
   const [todayWorkoutPlan, setTodayWorkoutPlan] = useState<WorkoutDay | null>(null);
@@ -73,6 +59,19 @@ const Index = () => {
     ];
     return dayMap[dayIndex];
   };
+
+  // Load exercises from localStorage
+  useEffect(() => {
+    const savedExercises = localStorage.getItem('exercises');
+    if (savedExercises) {
+      setExercises(JSON.parse(savedExercises));
+    }
+  }, []);
+
+  // Save exercises to localStorage whenever exercises change
+  useEffect(() => {
+    localStorage.setItem('exercises', JSON.stringify(exercises));
+  }, [exercises]);
 
   // Load workout plan from localStorage and find today's workout
   useEffect(() => {
@@ -93,31 +92,6 @@ const Index = () => {
     }
   }, []);
 
-  // Convert planned exercises to display format
-  const getTodayExercises = (): Exercise[] => {
-    if (!todayWorkoutPlan) return exercises;
-    
-    const plannedExercises: Exercise[] = todayWorkoutPlan.exercises.map(exercise => ({
-      id: exercise.id,
-      name: exercise.name,
-      weight: exercise.weight,
-      rpe: exercise.rpe,
-      sets: exercise.sets,
-      reps: exercise.reps,
-      date: new Date().toISOString().split('T')[0],
-      workoutName: todayWorkoutPlan.muscleGroup,
-      duration: todayWorkoutPlan.estimatedDuration,
-      cardioTime: 10,
-      caloriesBurned: Math.round(todayWorkoutPlan.estimatedDuration * 8.5) // Rough estimate
-    }));
-
-    // Combine with any completed exercises for today
-    const completedToday = exercises.filter(ex => ex.date === new Date().toISOString().split('T')[0]);
-    
-    // If there are completed exercises, show them, otherwise show planned exercises
-    return completedToday.length > 0 ? completedToday : plannedExercises;
-  };
-
   const addExercise = (exercise: Omit<Exercise, 'id' | 'date'>) => {
     const newExercise: Exercise = {
       ...exercise,
@@ -133,7 +107,8 @@ const Index = () => {
     setExercises(prev => prev.filter(ex => ex.id !== id));
   };
 
-  const displayExercises = getTodayExercises();
+  // Filter exercises for today only
+  const todayExercises = exercises.filter(ex => ex.date === new Date().toISOString().split('T')[0]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4">
@@ -153,6 +128,7 @@ const Index = () => {
         <TodayWorkoutCard 
           workoutName={todayWorkoutName} 
           onWorkoutNameChange={setTodayWorkoutName}
+          todayWorkoutPlan={todayWorkoutPlan}
         />
 
         {/* Metrics Grid */}
@@ -191,10 +167,10 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Exercise List */}
+          {/* Exercise List - Shows completed exercises for today */}
           <div className="lg:col-span-2">
             <ExerciseList 
-              exercises={displayExercises}
+              exercises={todayExercises}
               onDelete={deleteExercise}
             />
           </div>

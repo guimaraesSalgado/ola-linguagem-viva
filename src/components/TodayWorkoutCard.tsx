@@ -1,72 +1,132 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Edit2 } from 'lucide-react';
+import { Calendar, Clock, Target, Dumbbell } from 'lucide-react';
 import { useState } from 'react';
+
+interface WorkoutDay {
+  day: string;
+  muscleGroup: string;
+  estimatedDuration: number;
+  exercises: Array<{
+    id: string;
+    name: string;
+    weight: number;
+    sets: number;
+    reps: number;
+    rpe: number;
+  }>;
+}
 
 interface TodayWorkoutCardProps {
   workoutName: string;
   onWorkoutNameChange: (name: string) => void;
+  todayWorkoutPlan?: WorkoutDay | null;
 }
 
-const TodayWorkoutCard = ({ workoutName, onWorkoutNameChange }: TodayWorkoutCardProps) => {
+const TodayWorkoutCard = ({ workoutName, onWorkoutNameChange, todayWorkoutPlan }: TodayWorkoutCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(workoutName);
-
-  const today = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 
   const handleSave = () => {
     onWorkoutNameChange(tempName);
     setIsEditing(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    }
-    if (e.key === 'Escape') {
-      setTempName(workoutName);
-      setIsEditing(false);
-    }
+  const handleCancel = () => {
+    setTempName(workoutName);
+    setIsEditing(false);
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h${mins > 0 ? ` ${mins}min` : ''}` : `${mins}min`;
   };
 
   return (
-    <Card className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border-orange-500/30 backdrop-blur-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-2 text-orange-400 text-sm">
-          <Calendar className="h-4 w-4" />
-          <span className="capitalize">{today}</span>
+    <Card className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 border-slate-600 backdrop-blur-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-6 w-6 text-orange-500" />
+            <div>
+              <CardTitle className="text-white text-xl">Treino de Hoje</CardTitle>
+              <p className="text-slate-400 text-sm">
+                {new Date().toLocaleDateString('pt-BR', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
+          </div>
+          {todayWorkoutPlan && (
+            <div className="flex items-center gap-2 text-slate-300">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">{formatDuration(todayWorkoutPlan.estimatedDuration)}</span>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-slate-300 text-sm">Treino de hoje</p>
+        <div className="space-y-4">
+          <div>
+            <label className="text-slate-400 text-sm">Nome do Treino</label>
             {isEditing ? (
-              <Input
-                value={tempName}
-                onChange={(e) => setTempName(e.target.value)}
-                onBlur={handleSave}
-                onKeyDown={handleKeyPress}
-                className="text-2xl font-bold bg-transparent border-0 p-0 h-auto text-white focus-visible:ring-0"
-                autoFocus
-              />
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  className="bg-slate-700 border-slate-600 text-white"
+                  placeholder="Nome do treino"
+                />
+                <Button onClick={handleSave} size="sm" className="bg-green-600 hover:bg-green-700">
+                  Salvar
+                </Button>
+                <Button onClick={handleCancel} variant="outline" size="sm">
+                  Cancelar
+                </Button>
+              </div>
             ) : (
-              <h2 className="text-2xl font-bold text-white cursor-pointer hover:text-orange-400 transition-colors" 
-                  onClick={() => setIsEditing(true)}>
-                {workoutName}
-              </h2>
+              <div className="flex items-center justify-between mt-1">
+                <h3 className="text-2xl font-bold text-white">{workoutName}</h3>
+                <Button 
+                  onClick={() => setIsEditing(true)} 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-slate-400 hover:text-white"
+                >
+                  Editar
+                </Button>
+              </div>
             )}
           </div>
-          <Edit2 
-            className="h-5 w-5 text-slate-400 hover:text-orange-400 cursor-pointer transition-colors"
-            onClick={() => setIsEditing(true)}
-          />
+
+          {todayWorkoutPlan && todayWorkoutPlan.exercises.length > 0 && (
+            <div>
+              <h4 className="text-slate-400 text-sm mb-3 flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Exercícios Planejados
+              </h4>
+              <div className="grid gap-2">
+                {todayWorkoutPlan.exercises.map((exercise) => (
+                  <div key={exercise.id} className="bg-slate-700/30 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white font-medium">{exercise.name}</span>
+                      <div className="flex items-center gap-4 text-sm text-slate-300">
+                        <span>{exercise.weight}kg</span>
+                        <span>{exercise.sets}x{exercise.reps}</span>
+                        <span>RPE {exercise.rpe}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
